@@ -9,6 +9,19 @@ import { API_URL } from '@/utils/api';
 // Default avatar fallback
 import default_avatar from "@/assets/img/users/avata-1.png";
 
+const slider_setting = {
+  slidesPerView: 1,
+  spaceBetween: 30,
+  navigation: {
+    nextEl: ".blog-list-button-next",
+    prevEl: ".blog-list-button-prev",
+  },
+  scrollbar: {
+    el: ".blog-list__scrollbar",
+    clickable: true,
+  },
+};
+
 const BlogArea = () => {
   const [items, setItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -142,7 +155,7 @@ const BlogArea = () => {
                             className="swiper-container blog-list__slider-active p-relative">
                             <div className="blog-list__scrollbar"></div>
                             <div className="swiper-wrapper">
-                              {item.sliders?.map((slider, index) => (
+                              {item.sliders?.map((slider: any, index: number) => (
                                 <SwiperSlide key={index} className="blog-list__slider-item">
                                   <div className="row align-items-center">
                                     <div className="col-xl-8">
@@ -201,7 +214,7 @@ const BlogArea = () => {
 
                         <div className="blog-list__wrapper">
                           <div className="row gx-50">
-                            {item.article_data?.map((article, index) => (
+                            {item.article_data?.map((article: any, index: number) => (
                               <div key={index} className="col-xl-6 col-lg-6 col-md-6">
                                 <div className="blog-list__sm-item mb-60 pb-30">
                                   <div className="blog-list__sm-thumb">
