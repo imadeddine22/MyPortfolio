@@ -65,19 +65,24 @@ const login = async (req, res, next) => {
 // Seeder function to auto-create admin if none exists
 const seedAdmin = async () => {
   try {
-    const count = await Admin.countDocuments();
-    if (count === 0) {
-      const username = process.env.ADMIN_USERNAME || 'admin';
-      const password = process.env.ADMIN_PASSWORD || 'adminpassword123';
-      const email = 'admin@imdev.com';
+    const username = process.env.ADMIN_USERNAME || 'admin';
+    const password = process.env.ADMIN_PASSWORD || 'adminpassword123';
+    const email = 'admin@imdev.com';
 
+    let admin = await Admin.findOne({ role: 'admin' });
+    if (!admin) {
       await Admin.create({
         username,
         email,
         password,
         role: 'admin'
       });
-      console.log(`Admin user auto-created: ${username} / ${password}`);
+      console.log(`Admin user auto-created: ${username}`);
+    } else {
+      admin.username = username;
+      admin.password = password;
+      await admin.save();
+      console.log(`Admin user auto-updated: ${username}`);
     }
   } catch (error) {
     console.error('Error seeding admin user:', error.message);
