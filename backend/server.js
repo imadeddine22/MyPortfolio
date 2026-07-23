@@ -21,7 +21,10 @@ app.use(helmet({
 }));
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl) or any origin
+    callback(null, true);
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));
