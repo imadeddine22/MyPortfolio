@@ -5,13 +5,14 @@ const connectDB = async () => {
   const fallbackUri = 'mongodb://127.0.0.1:27017/imdev';
   
   try {
-    console.log('Attempting to connect to MongoDB Atlas...');
+    const maskedUri = primaryUri ? primaryUri.replace(/:([^@]+)@/, ':****@') : 'undefined';
+    console.log(`Attempting to connect to MongoDB Atlas at: ${maskedUri}`);
     const conn = await mongoose.connect(primaryUri, {
       serverSelectionTimeoutMS: 5000 // 5 seconds timeout before fallback
     });
     console.log(`MongoDB Connected (Atlas): ${conn.connection.host}`);
   } catch (error) {
-    console.warn(`Atlas Connection Failed: ${error.message}`);
+    console.warn(`Atlas Connection Failed: ${error.stack || error.message}`);
     console.log('Falling back to local MongoDB database...');
     try {
       const conn = await mongoose.connect(fallbackUri);
