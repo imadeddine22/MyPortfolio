@@ -40,9 +40,9 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Request parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Request parsing – increased limit for Base64 image payloads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // HTTP logging
 if (process.env.NODE_ENV === 'development') {
