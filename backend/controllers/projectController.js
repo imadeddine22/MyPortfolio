@@ -58,6 +58,9 @@ const getProjectById = async (req, res, next) => {
 // @access  Private/Admin
 const createProject = async (req, res, next) => {
   try {
+    if (req.body.liveUrl && !req.body.liveDemo) req.body.liveDemo = req.body.liveUrl;
+    if (req.body.liveDemo && !req.body.liveUrl) req.body.liveUrl = req.body.liveDemo;
+
     const project = await Project.create(req.body);
 
     res.status(201).json({
@@ -83,6 +86,9 @@ const updateProject = async (req, res, next) => {
         message: 'Project not found',
       });
     }
+
+    if (req.body.liveUrl && !req.body.liveDemo) req.body.liveDemo = req.body.liveUrl;
+    if (req.body.liveDemo && !req.body.liveUrl) req.body.liveUrl = req.body.liveDemo;
 
     project = await Project.findByIdAndUpdate(req.params.id, req.body, {
       new: true,

@@ -212,8 +212,14 @@ export default function AdminDashboard() {
     if (!form.title) return;
     setSaving(true);
     const ep = modal === 'project' ? 'projects' : 'services';
+    const liveVal = form.liveUrl || form.liveDemo || '';
     const payload = modal === 'project'
-      ? { ...form, technologies: (form.technologiesRaw || '').split(',').map((str: string) => str.trim()).filter(Boolean) }
+      ? { 
+          ...form, 
+          liveUrl: liveVal,
+          liveDemo: liveVal,
+          technologies: (form.technologiesRaw || '').split(',').map((str: string) => str.trim()).filter(Boolean) 
+        }
       : form;
     try {
       const url = editingId ? `${API_URL}/${ep}/${editingId}` : `${API_URL}/${ep}`;
@@ -617,8 +623,9 @@ export default function AdminDashboard() {
                   });
                   const resData = await res.json();
                   if (resData.success) {
-                    const backendHost = API_URL.replace('/api', '');
-                    setForm({ ...form, coverImage: `${backendHost}${resData.data.filePath}` });
+                    const imgPath = resData.data.filePath;
+                    const finalUrl = (imgPath.startsWith('http') || imgPath.startsWith('data:')) ? imgPath : `${API_URL.replace('/api', '')}${imgPath.startsWith('/') ? '' : '/'}${imgPath}`;
+                    setForm({ ...form, coverImage: finalUrl });
                   } else {
                     alert(resData.message || 'Upload failed');
                   }
@@ -631,7 +638,7 @@ export default function AdminDashboard() {
           {form.coverImage && <img src={form.coverImage} alt="preview" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px', marginBottom: '14px', border: '1px solid rgba(255,255,255,0.08)' }} onError={e => (e.currentTarget.style.display = 'none')} />}
 
           <label style={lbl}>Live Project URL ↗</label>
-          <input style={inp} placeholder="https://yourproject.com" value={form.liveUrl || ''} onChange={e => setForm({ ...form, liveUrl: e.target.value })} />
+          <input style={inp} placeholder="https://yourproject.com" value={form.liveUrl || form.liveDemo || ''} onChange={e => setForm({ ...form, liveUrl: e.target.value, liveDemo: e.target.value })} />
 
           <label style={lbl}>GitHub URL (optional)</label>
           <input style={inp} placeholder="https://github.com/..." value={form.githubUrl || ''} onChange={e => setForm({ ...form, githubUrl: e.target.value })} />
@@ -677,8 +684,9 @@ export default function AdminDashboard() {
                   });
                   const resData = await res.json();
                   if (resData.success) {
-                    const backendHost = API_URL.replace('/api', '');
-                    setForm({ ...form, icon: `${backendHost}${resData.data.filePath}` });
+                    const imgPath = resData.data.filePath;
+                    const finalUrl = (imgPath.startsWith('http') || imgPath.startsWith('data:')) ? imgPath : `${API_URL.replace('/api', '')}${imgPath.startsWith('/') ? '' : '/'}${imgPath}`;
+                    setForm({ ...form, icon: finalUrl });
                   } else {
                     alert(resData.message || 'Upload failed');
                   }

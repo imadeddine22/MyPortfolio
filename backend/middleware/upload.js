@@ -1,26 +1,15 @@
 const multer = require('multer');
-const path = require('path');
 
-// Set Storage Engine
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
+// Use Memory Storage so file buffer is held in memory for Base64 encoding
+const storage = multer.memoryStorage();
 
 // Check File Type
 function checkFileType(file, cb) {
-  // Allowed ext
   const filetypes = /jpeg|jpg|png|gif|svg|webp/;
-  // Check ext
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // Check mime
+  const extname = filetypes.test(file.originalname.toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
 
-  if (mimetype && extname) {
+  if (mimetype || extname) {
     return cb(null, true);
   } else {
     cb(new Error('Images and SVGs only!'));
@@ -30,7 +19,7 @@ function checkFileType(file, cb) {
 // Init Upload
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5000000 }, // limit 5MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // limit 10MB
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   }

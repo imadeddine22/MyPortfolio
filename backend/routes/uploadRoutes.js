@@ -15,8 +15,10 @@ router.post('/', protect, upload.single('image'), (req, res) => {
     });
   }
 
-  // Generate public file path (e.g. /uploads/image-123456.png)
-  const filePath = `/uploads/${req.file.filename}`;
+  // Convert image buffer into Base64 Data URI for permanent storage in MongoDB
+  const mime = req.file.mimetype || 'image/jpeg';
+  const base64Str = req.file.buffer.toString('base64');
+  const filePath = `data:${mime};base64,${base64Str}`;
 
   res.status(200).json({
     success: true,

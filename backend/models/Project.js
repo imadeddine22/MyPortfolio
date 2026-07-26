@@ -26,6 +26,10 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  liveUrl: {
+    type: String,
+    default: '',
+  },
   technologies: {
     type: [String],
     default: [],
