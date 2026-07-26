@@ -126,6 +126,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState<null | 'project' | 'service'>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState({ messages: 0, projects: 0, testimonials: 0, comments: 0, services: 0 });
@@ -182,16 +183,43 @@ export default function AdminDashboard() {
     fetchTab(activeTab);
   };
 
+  const startEditProject = (p: any) => {
+    setEditingId(p._id);
+    setForm({
+      title: p.title || '',
+      description: p.description || '',
+      coverImage: p.coverImage || '',
+      liveUrl: p.liveUrl || p.liveDemo || '',
+      githubUrl: p.githubUrl || '',
+      technologiesRaw: (p.technologies || []).join(', '),
+      featured: p.featured || false,
+    });
+    setModal('project');
+  };
+
+  const startEditService = (s: any) => {
+    setEditingId(s._id);
+    setForm({
+      title: s.title || '',
+      description: s.description || '',
+      icon: s.icon || '',
+      link: s.link || '',
+    });
+    setModal('service');
+  };
+
   const doSave = async () => {
     if (!form.title) return;
     setSaving(true);
     const ep = modal === 'project' ? 'projects' : 'services';
     const payload = modal === 'project'
-      ? { ...form, technologies: (form.technologiesRaw || '').split(',').map((s: string) => s.trim()).filter(Boolean) }
+      ? { ...form, technologies: (form.technologiesRaw || '').split(',').map((str: string) => str.trim()).filter(Boolean) }
       : form;
     try {
-      await fetch(`${API_URL}/${ep}`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(payload) });
-      setModal(null); setForm({});
+      const url = editingId ? `${API_URL}/${ep}/${editingId}` : `${API_URL}/${ep}`;
+      const method = editingId ? 'PUT' : 'POST';
+      await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
+      setModal(null); setForm({}); setEditingId(null);
       fetchTab(modal === 'project' ? 'projects' : 'services');
     } catch {}
     setSaving(false);
@@ -355,8 +383,8 @@ export default function AdminDashboard() {
                 <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 700 }}>Quick Actions</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px' }}>
                   {[
-                    { label: 'Add Project',   icon: '🗂', color: '#B1D61E',  action: () => { setActiveTab('projects'); setModal('project'); } },
-                    { label: 'Add Service',   icon: '⚡', color: '#64b5f6',  action: () => { setActiveTab('services'); setModal('service'); } },
+                    { label: 'Add Project',   icon: '🗂', color: '#B1D61E',  action: () => { setEditingId(null); setActiveTab('projects'); setModal('project'); } },
+                    { label: 'Add Service',   icon: '⚡', color: '#64b5f6',  action: () => { setEditingId(null); setActiveTab('services'); setModal('service'); } },
                     { label: 'View Messages', icon: '✉',  color: '#ffc107',  action: () => setActiveTab('messages') },
                     { label: 'Approve Comments', icon: '💬', color: '#ef9a9a', action: () => setActiveTab('comments') },
                   ].map((q, i) => (
@@ -378,7 +406,7 @@ export default function AdminDashboard() {
                   <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 800 }}>🗂 Projects</h2>
                   <p style={{ margin: 0, color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>Your portfolio works</p>
                 </div>
-                <button onClick={() => { setForm({ featured: false }); setModal('project'); }} style={{ padding: '10px 20px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button onClick={() => { setEditingId(null); setForm({ featured: false }); setModal('project'); }} style={{ padding: '10px 20px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   + Add Project
                 </button>
               </div>
@@ -388,7 +416,7 @@ export default function AdminDashboard() {
                 <div style={{ textAlign: 'center', padding: '80px', color: 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.08)' }}>
                   <div style={{ fontSize: '52px', marginBottom: '12px' }}>🗂</div>
                   <p style={{ fontSize: '16px', margin: '0 0 20px' }}>No projects yet</p>
-                  <button onClick={() => { setForm({ featured: false }); setModal('project'); }} style={{ padding: '10px 24px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer' }}>+ Add Your First Project</button>
+                  <button onClick={() => { setEditingId(null); setForm({ featured: false }); setModal('project'); }} style={{ padding: '10px 24px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer' }}>+ Add Your First Project</button>
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: '14px' }}>
@@ -407,7 +435,10 @@ export default function AdminDashboard() {
                         ))}
                       </div>
                       {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noreferrer" style={{ color: '#64b5f6', fontSize: '11px', display: 'block', marginBottom: '12px' }}>↗ {p.liveUrl}</a>}
-                      <ActionBtn label="🗑 Delete" color="#ef9a9a" onClick={() => doDelete(p._id, 'projects')} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <ActionBtn label="✏️ Edit" color="#B1D61E" onClick={() => startEditProject(p)} />
+                        <ActionBtn label="🗑 Delete" color="#ef9a9a" onClick={() => doDelete(p._id, 'projects')} />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -423,7 +454,7 @@ export default function AdminDashboard() {
                   <h2 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 800 }}>⚡ Services</h2>
                   <p style={{ margin: 0, color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>Services with image & link</p>
                 </div>
-                <button onClick={() => { setForm({}); setModal('service'); }} style={{ padding: '10px 20px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>
+                <button onClick={() => { setEditingId(null); setForm({}); setModal('service'); }} style={{ padding: '10px 20px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>
                   + Add Service
                 </button>
               </div>
@@ -432,7 +463,7 @@ export default function AdminDashboard() {
                 <div style={{ textAlign: 'center', padding: '80px', color: 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.08)' }}>
                   <div style={{ fontSize: '52px', marginBottom: '12px' }}>⚡</div>
                   <p style={{ fontSize: '16px', margin: '0 0 20px' }}>No services yet</p>
-                  <button onClick={() => { setForm({}); setModal('service'); }} style={{ padding: '10px 24px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer' }}>+ Add Your First Service</button>
+                  <button onClick={() => { setEditingId(null); setForm({}); setModal('service'); }} style={{ padding: '10px 24px', background: '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer' }}>+ Add Your First Service</button>
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '14px' }}>
@@ -559,9 +590,9 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* ══ ADD PROJECT MODAL ══════════════════════════════════════════ */}
+      {/* ══ ADD / EDIT PROJECT MODAL ══════════════════════════════════════════ */}
       {modal === 'project' && (
-        <Modal title="➕ Add New Project" onClose={() => { setModal(null); setForm({}); }}>
+        <Modal title={editingId ? '✏️ Edit Project' : '➕ Add New Project'} onClose={() => { setModal(null); setForm({}); setEditingId(null); }}>
           <label style={lbl}>Project Title *</label>
           <input style={inp} placeholder="e.g. E-commerce Platform" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} />
 
@@ -614,14 +645,14 @@ export default function AdminDashboard() {
           </label>
 
           <button onClick={doSave} disabled={saving || !form.title} style={{ width: '100%', padding: '13px', background: saving || !form.title ? 'rgba(177,214,30,0.35)' : '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: saving || !form.title ? 'not-allowed' : 'pointer', fontSize: '15px', fontFamily: "'DM Sans',sans-serif" }}>
-            {saving ? 'Saving…' : '✓ Save Project'}
+            {saving ? 'Saving…' : (editingId ? '✓ Update Project' : '✓ Save Project')}
           </button>
         </Modal>
       )}
 
-      {/* ══ ADD SERVICE MODAL ══════════════════════════════════════════ */}
+      {/* ══ ADD / EDIT SERVICE MODAL ══════════════════════════════════════════ */}
       {modal === 'service' && (
-        <Modal title="➕ Add New Service" onClose={() => { setModal(null); setForm({}); }}>
+        <Modal title={editingId ? '✏️ Edit Service' : '➕ Add New Service'} onClose={() => { setModal(null); setForm({}); setEditingId(null); }}>
           <label style={lbl}>Service Title *</label>
           <input style={inp} placeholder="e.g. Web Development" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} />
 
@@ -663,7 +694,7 @@ export default function AdminDashboard() {
           <input style={inp} placeholder="https://example.com or /portfolio-details/..." value={form.link || ''} onChange={e => setForm({ ...form, link: e.target.value })} />
 
           <button onClick={doSave} disabled={saving || !form.title || !form.description} style={{ width: '100%', padding: '13px', marginTop: '6px', background: saving || !form.title || !form.description ? 'rgba(177,214,30,0.35)' : '#B1D61E', border: 'none', borderRadius: '10px', color: '#0b1410', fontWeight: 700, cursor: 'pointer', fontSize: '15px', fontFamily: "'DM Sans',sans-serif" }}>
-            {saving ? 'Saving…' : '✓ Save Service'}
+            {saving ? 'Saving…' : (editingId ? '✓ Update Service' : '✓ Save Service')}
           </button>
         </Modal>
       )}

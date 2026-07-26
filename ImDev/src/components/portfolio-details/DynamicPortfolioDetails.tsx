@@ -55,7 +55,22 @@ export default function DynamicPortfolioDetails({ id }: { id: string }) {
     fetchProject();
   }, [id]);
 
-  const liveLink = project?.liveUrl || project?.liveDemo;
+  const getFullImageUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    const backendHost = API_URL.replace('/api', '');
+    return `${backendHost}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
+
+  const formatExternalUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+  };
+
+  const liveLink = formatExternalUrl(project?.liveUrl || project?.liveDemo);
+  const githubLink = formatExternalUrl(project?.githubUrl);
+  const coverImg = getFullImageUrl(project?.coverImage);
 
   return (
     <>
@@ -254,29 +269,32 @@ export default function DynamicPortfolioDetails({ id }: { id: string }) {
                   </div>
 
                   {/* Main Banner Image */}
-                  <div
-                    style={{
-                      width: '100%',
-                      borderRadius: '24px',
-                      overflow: 'hidden',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      marginBottom: '60px',
-                      boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-                      background: 'rgba(0,0,0,0.2)',
-                      position: 'relative',
-                    }}
-                  >
-                    <img
-                      src={project.coverImage}
-                      alt={project.title}
+                  {coverImg && (
+                    <div
                       style={{
                         width: '100%',
-                        maxHeight: '650px',
-                        objectFit: 'cover',
-                        display: 'block',
+                        borderRadius: '24px',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        marginBottom: '60px',
+                        boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+                        background: 'rgba(0,0,0,0.2)',
+                        position: 'relative',
                       }}
-                    />
-                  </div>
+                    >
+                      <img
+                        src={coverImg}
+                        alt={project.title}
+                        style={{
+                          width: '100%',
+                          maxHeight: '650px',
+                          objectFit: 'cover',
+                          display: 'block',
+                        }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
 
                   {/* Main Grid: Content & Sidebar */}
                   <div className="row g-5">
@@ -480,9 +498,9 @@ export default function DynamicPortfolioDetails({ id }: { id: string }) {
                             </a>
                           )}
 
-                          {project.githubUrl && (
+                          {githubLink && (
                             <a
-                              href={project.githubUrl}
+                              href={githubLink}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
