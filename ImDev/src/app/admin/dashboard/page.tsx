@@ -428,7 +428,7 @@ export default function AdminDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: '14px' }}>
                 {data.map((p: any) => (
                   <div key={p._id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
-                    {p.coverImage && <img src={p.coverImage} alt={p.title} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />}
+                    {p.coverImage && <img src={p.coverImage} alt="" style={{ width: '100%', height: '160px', objectFit: 'cover' }} onError={e => { e.currentTarget.style.display = 'none'; }} />}
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700 }}>{p.title}</h4>
@@ -440,7 +440,7 @@ export default function AdminDashboard() {
                           <span key={i} style={{ padding: '2px 7px', background: 'rgba(177,214,30,0.1)', border: '1px solid rgba(177,214,30,0.2)', borderRadius: '4px', fontSize: '10px', color: '#B1D61E' }}>{t}</span>
                         ))}
                       </div>
-                      {p.liveUrl && <a href={p.liveUrl} target="_blank" rel="noreferrer" style={{ color: '#64b5f6', fontSize: '11px', display: 'block', marginBottom: '12px' }}>↗ {p.liveUrl}</a>}
+                      {(p.liveUrl || p.liveDemo) && (() => { const url = p.liveUrl || p.liveDemo; try { const u = new URL(url); return <a href={url} target="_blank" rel="noreferrer" style={{ color: '#64b5f6', fontSize: '11px', display: 'block', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>↗ {u.host}{u.pathname !== '/' ? u.pathname : ''}</a>; } catch { return <a href={url} target="_blank" rel="noreferrer" style={{ color: '#64b5f6', fontSize: '11px', display: 'block', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>↗ {url.length > 40 ? url.slice(0, 40) + '…' : url}</a>; } })()}
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <ActionBtn label="✏️ Edit" color="#B1D61E" onClick={() => startEditProject(p)} />
                         <ActionBtn label="🗑 Delete" color="#ef9a9a" onClick={() => doDelete(p._id, 'projects')} />
