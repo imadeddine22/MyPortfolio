@@ -2,7 +2,7 @@ import "../styles/index.scss";
 import ThemeProvider from "@/components/provider/ThemeProvider";
 import type { Metadata } from "next";
 
-const SITE_URL = "https://imadeddine.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://my-portfolio-roan-phi-7yu1t6jbgs.vercel.app";
 
 export const metadata: Metadata = {
   title: {
