@@ -392,6 +392,7 @@ const TestimonialAreaHomeOne = ({ style }: any) => {
   const sliderRef = useRef<Slider | null>(null);
 
   const [dbTestimonials, setDbTestimonials] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -403,6 +404,8 @@ const TestimonialAreaHomeOne = ({ style }: any) => {
         }
       } catch (error) {
         console.error("Error fetching testimonials:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchTestimonials();
@@ -489,6 +492,23 @@ const TestimonialAreaHomeOne = ({ style }: any) => {
             </div>
           }
 
+          {isLoading ? (
+            <div className="row">
+              <div className="col-xl-12">
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '3px solid rgba(255,255,255,0.1)',
+                    borderTop: '3px solid #B1D61E',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                  }} />
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              </div>
+            </div>
+          ) : (
           <div className="row">
             <div className="col-xl-12">
               <div className="tp-testimonial-slider ml-70 mr-70">
@@ -559,6 +579,7 @@ const TestimonialAreaHomeOne = ({ style }: any) => {
               </div>
             </div>
           </div>
+          )}
 
           {/* ===== Leave a Review Form ===== */}
           {!style && (
